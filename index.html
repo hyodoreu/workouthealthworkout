@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <input type="color" id="bg-color-picker" style="display: none;" value="#f7ff00">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>운동식단운동</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Kosugi+Maru&display=swap" rel="stylesheet">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+  <style>
+    
+    .font1 {
+      font-family: "Baloo 2", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 540;
+      font-style: normal;
+    }
+
+    .font2 {
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: #f7ff00; /* 기본 레몬색 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      transition: background-color 0.4s ease;
+      z-index: -100;
+    }
+
+    .app-container {
+      
+      width: 100%;
+      max-width: 400px;
+      height: 100vh;
+      max-height: 844px;
+      background-color: inherit; /* body 배경색 따라감 */
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background-color 0.4s ease;
+    }
+
+    /* 상단 날짜 / 탭 토글 버튼 */
+    .top-header {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      text-align: center;
+    }
+
+    .header-btn {
+      font-size: 3rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-block;
+      transition: transform 0.1s ease;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .redtextbox {
+      -webkit-text-stroke: 17px #ff0000; 
+      color: white;
+      paint-order: stroke fill; 
+    }
+
+    .greentextbox {
+      -webkit-text-stroke: 17px #30EF4D; 
+      color: #0087F5;
+      paint-order: stroke fill; 
+    }
+
+    .header-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 메인 스크롤 영역 (사진 + 텍스트) */
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 70px 40px 90px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .content-area::-webkit-scrollbar {
+      width: 4px;
+    }
+    .content-area::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* 사진 영역 */
+    .photo-container {
+      width: 100%;
+      position: relative;
+      margin-top: -10px;
+    }
+
+    .photo-img {
+      width: 100%;
+      display: block;
+    }
+
+    .photo-delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* 텍스트 영역 */
+    .text-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .text-item {
+      font-size: 2.2rem;
+      font-weight: 800;
+      text-align: justify;
+      text-align-last: justify; /* 이 줄을 추가해 주세요! 마지막 줄까지 양끝으로 꽉 채워줍니다 */
+      word-break: keep-all; 
+      position: relative;
+      cursor: pointer;
+      letter-spacing: -1px;
+      line-height: 2;
+      display: block;    /* inline-block 대신 block 사용 */
+      width: 96%;        /* 양옆에 살짝 여백을 주면서 가운데 정렬되도록 너비 설정 */
+      margin: 0 auto;    /* 확실하게 가운데로 정렬 */
+    }
+
+    /* 클릭 시 취소선 효과 (중앙 정렬 보정) */
+    .text-item.completed::after {
+      content: '';
+      position: absolute;
+      left: -4%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 108%;
+      height: 14px;
+      background-color: #ff0055;
+      mix-blend-mode: hue;
+      border-radius: 7px;
+      pointer-events: none;
+    }
+
+    /* 하단 버튼 */
+   .bottom-bar {
+      position: absolute;
+      bottom: 25px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      /* 반응형 여백 설정 */
+      /* 방법 1: 뷰포트 너비 비례 (추천: 8vw ~ 12vw 사이로 취향껏 조절해 보세요!) */
+      gap: 10vw; 
+
+      /* 또는 방법 2: clamp를 사용해 최솟값과 최댓값 범위 내에서 반응형으로 조절 */
+      /* gap: clamp(20px, 8vw, 40px); */
+
+      z-index: 10;
+      width: 100%; /* 부모 안에서 가로 전체 영역 확보 */
+      z-index: 199;
+      }
+    .action-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 1.6rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      -webkit-text-stroke: 14px #DADADA; 
+      color: #BBBBBB;
+      paint-order: stroke fill;
+    }
+
+    .action-btn:active {
+      transform: translateY(2px);
+    }
+
+    /* Previous Days 날짜 목록 뷰 */
+    /* Previous Days 목록 영역 (세로 2열 정렬) */
+    .history-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2열로 나열 */
+      gap: 20px 10px;                        /* 행/열 간격 */
+      width: 100%;
+      text-align: center;
+      padding-top: 40px;
+    }
+
+    /* 각 날짜 텍스트 (상단 헤더 빨간 테두리 + 흰색 글씨 스타일 적용) */
+    .history-date-item {
+      font-size: 2.2rem; /* 날짜 크기에 맞게 조절 (원하시면 키우셔도 됩니다) */
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-block;
+      transition: transform 0.1s ease;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      justify-self: center;
+    }
+
+    .history-date-item:active {
+      transform: scale(0.95);
+    }
+
+    .history-card {
+      background: rgba(255, 255, 255, 0.6);
+      
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+    }
+
+    .history-date {
+      font-size: 1.4rem;
+      color: #ff0000;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .history-preview {
+      font-size: 1rem;
+      color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* 입력 모달 창 (간소화) */
+    .modal {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      width: 100%;
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      height: 90px;
+      padding: 12px;
+      font-size: 1.1rem;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      resize: none;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .modal-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-submit { background: #00e5ff; color: white; }
+    .btn-cancel { background: #ccc; color: #333; }
+
+    #photo-input { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container font2">
+    <div class="top-header">
+      <div id="header-btn" class="header-btn redtextbox">--月 --日</div>
+    </div>
+
+    <!-- 오늘 기록 / 상세 보기 영역 -->
+    <div id="today-view" class="content-area font1">
+      <div id="photo-container" class="photo-container"></div>
+      <div id="text-list" class="text-list greentextbox"></div>
+    </div>
+
+    <!-- 지난 기록 목록 영역 (기본 숨김) -->
+    <div id="previous-view" class="content-area" style="display: none;">
+      <div id="history-list" class="history-list"></div>
+    </div>
+
+    <!-- 하단 툴바 버튼 -->
+    <div id="bottom-bar" class="bottom-bar">
+      <button class="action-btn" onclick="triggerPhotoUpload()">photo</button>
+      <button class="action-btn" onclick="openTextModal()">text</button>
+      <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoSelect(event)">
+    </div>
+  </div>
+
+  <!-- 텍스트 입력 모달 (안내문구 및 제목 삭제) -->
+  <div id="text-modal" class="modal">
+    <div class="modal-content">
+      <textarea id="modal-input"></textarea>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-cancel" onclick="closeTextModal()">취소</button>
+        <button class="modal-btn btn-submit" onclick="saveTextItem()">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_BG_COLOR = '#f7ff00'; // 기본 레몬색
+    const colorPicker = document.getElementById('bg-color-picker');
+    let isPickerOpen = false; // 컬러 피커 열림 상태 확인 플래그
+
+    // --- [기능 2, 3] 저장된 배경색 불러오기 & 자정 지나면 레몬색 리셋 ---
+    function initBackgroundColor() {
+      const savedBg = localStorage.getItem('app_bg_color');
+      const savedBgDate = localStorage.getItem('app_bg_date');
+      const todayStr = getFormattedDateKey(getKoreaDate()); // 기존 한국 날짜(YYYY-MM-DD) 함수 활용
+
+      // 저장된 날짜가 오늘과 다르면(자정이 지나 다음날이 되면) 레몬색으로 리셋
+      if (savedBgDate !== todayStr) {
+        applyBackgroundColor(DEFAULT_BG_COLOR);
+        localStorage.removeItem('app_bg_color');
+        localStorage.setItem('app_bg_date', todayStr);
+      } else if (savedBg) {
+        // 오늘 변경해서 저장한 색상이 있으면 불러오기
+        applyBackgroundColor(savedBg);
+      } else {
+        applyBackgroundColor(DEFAULT_BG_COLOR);
+      }
+    }
+
+    // 배경색 적용 함수
+    function applyBackgroundColor(color) {
+      document.body.style.backgroundColor = color;
+      document.querySelector('.app-container').style.backgroundColor = color;
+      colorPicker.value = color.length === 7 ? color : DEFAULT_BG_COLOR;
+    }
+
+    // --- [기능 4] 화면 터치 시 컬러 피커 토글 (열기/닫기) ---
+    document.body.addEventListener('click', function(e) {
+      // 버튼, 텍스트 항목, 모달 등 주요 인터랙티브 요소 터치 시에는 작동하지 않음
+      const isInteractive = e.target.closest('.action-btn, .header-btn, .text-item, .photo-delete-btn, .history-card, .modal-content, .modal');
+      
+      if (!isInteractive) {
+        if (!isPickerOpen) {
+          colorPicker.click(); // 피커 창 열기
+          isPickerOpen = true;
+        } else {
+          colorPicker.blur(); // 피커 포커스 해제 (창 닫기 시도)
+          isPickerOpen = false;
+        }
+      }
+    });
+
+    // 컬러 피커 창이 창 자체에서 닫혔을 때 상태 업데이트
+    colorPicker.addEventListener('change', function() {
+      isPickerOpen = false;
+    });
+
+    // --- [기능 2] 선택한 색상 적용 및 localStorage 저장 ---
+    colorPicker.addEventListener('input', function(e) {
+      const selectedColor = e.target.value;
+      const todayStr = getFormattedDateKey(getKoreaDate());
+
+      applyBackgroundColor(selectedColor);
+
+      // 새로고침해도 유지되도록 로컬 스토리지에 색상과 오늘 날짜 저장
+      localStorage.setItem('app_bg_color', selectedColor);
+      localStorage.setItem('app_bg_date', todayStr);
+    });
+
+    // 앱 시작 시 배경색 초기화 실행
+    initBackgroundColor();
+
+
+
+    // 현재 모드 ('today' 또는 'previous')
+    let currentMode = 'today';
+    let viewingDateKey = null;
+
+    // 한국 (서울) 기준 날짜 가져오기
+    function getKoreaDate() {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const koreaTimeDiff = 9 * 60 * 60000;
+      return new Date(utc + koreaTimeDiff);
+    }
+
+    function getFormattedDateKey(dateObj) {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getHeaderDateString(dateObj) {
+      const month = dateObj.getMonth() + 1;
+      const day = dateObj.getDate();
+      return `${month}月${day}日`;
+    }
+
+    const todayObj = getKoreaDate();
+    const todayKey = getFormattedDateKey(todayObj);
+    const todayHeaderStr = getHeaderDateString(todayObj);
+
+    // 데이터 로드
+    function getStoredData() {
+      const data = localStorage.getItem('fitness_tracker_data');
+      return data ? JSON.parse(data) : {};
+    }
+
+    function saveStoredData(data) {
+      localStorage.setItem('fitness_tracker_data', JSON.stringify(data));
+    }
+
+    function getDayData(dateKey) {
+      const allData = getStoredData();
+      return allData[dateKey] || { photo: null, texts: [] };
+    }
+
+    function updateDayData(dateKey, dayData) {
+      const allData = getStoredData();
+      allData[dateKey] = dayData;
+      saveStoredData(allData);
+    }
+
+    // UI 렌더링
+    function render() {
+      const headerBtn = document.getElementById('header-btn');
+      const todayView = document.getElementById('today-view');
+      const previousView = document.getElementById('previous-view');
+      const bottomBar = document.getElementById('bottom-bar');
+
+      if (currentMode === 'today') {
+        headerBtn.innerText = todayHeaderStr;
+        todayView.style.display = 'flex';
+        previousView.style.display = 'none';
+        bottomBar.style.display = 'flex';
+        renderDayContent(todayKey);
+      } else {
+        headerBtn.innerText = 'Previous Days';
+        todayView.style.display = 'none';
+        previousView.style.display = 'flex';
+        bottomBar.style.display = 'none';
+        renderHistoryList();
+      }
+    }
+
+    // 특정 날짜 콘텐츠 (사진 + 텍스트) 렌더링
+    function renderDayContent(dateKey) {
+      const data = getDayData(dateKey);
+      
+      // 사진
+      const photoContainer = document.getElementById('photo-container');
+      if (data.photo) {
+        photoContainer.innerHTML = `
+          <img src="${data.photo}" class="photo-img" />
+          ${currentMode === 'today' ? `<button class="photo-delete-btn" onclick="deletePhoto('${dateKey}')">×</button>` : ''}
+        `;
+      } else {
+        photoContainer.innerHTML = '';
+      }
+
+      // 텍스트 목록
+      const textList = document.getElementById('text-list');
+      textList.innerHTML = '';
+      data.texts.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = `text-item ${item.completed ? 'completed' : ''}`;
+        div.innerText = item.text;
+        div.onclick = () => toggleTextComplete(dateKey, index);
+        textList.appendChild(div);
+      });
+    }
+
+    // 지난 날짜 목록 렌더링
+    function renderHistoryList() {
+      const allData = getStoredData();
+      const historyList = document.getElementById('history-list');
+      historyList.innerHTML = '';
+
+      const keys = Object.keys(allData).sort().reverse();
+      
+      if (keys.length === 0) {
+        historyList.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #fff; font-weight: bold; margin-top: 40px; font-size: 1.2rem;">저장된 이전 기록이 없습니다.</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const [y, m, d] = key.split('-');
+        
+        // 박스 대신 날짜 텍스트 자체만 생성
+        const dateEl = document.createElement('div');
+        dateEl.className = 'history-date-item redtextbox font2'; // 상단 헤더와 동일한 redtextbox 스타일 적용
+        dateEl.innerText = `${parseInt(m)}月${parseInt(d)}日`;
+        
+        // 클릭 시 해당 날짜 상세 보기로 이동
+        dateEl.onclick = () => openDetailView(key);
+
+        historyList.appendChild(dateEl);
+      });
+    }
+
+    // 상단 버튼 클릭 토글 (Today ↔ Previous Days)
+    document.getElementById('header-btn').onclick = () => {
+      if (currentMode === 'today') {
+        currentMode = 'previous';
+      } else {
+        currentMode = 'today';
+      }
+      render();
+    };
+
+    // 완료 토글 (취소선 효과)
+    function toggleTextComplete(dateKey, index) {
+      if (currentMode !== 'today') return; // 당일만 수정 가능
+      const data = getDayData(dateKey);
+      data.texts[index].completed = !data.texts[index].completed;
+      updateDayData(dateKey, data);
+      renderDayContent(dateKey);
+    }
+
+    // 사진 등록 / 삭제
+    function triggerPhotoUpload() {
+      document.getElementById('photo-input').click();
+    }
+
+    function handlePhotoSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = getDayData(todayKey);
+        data.photo = e.target.result;
+        updateDayData(todayKey, data);
+        renderDayContent(todayKey);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function deletePhoto(dateKey) {
+      const data = getDayData(dateKey);
+      data.photo = null;
+      updateDayData(dateKey, data);
+      renderDayContent(dateKey);
+    }
+
+    
+    // 텍스트 모달 열기 / 저장
+    function openTextModal() {
+      document.getElementById('modal-input').value = '';
+      document.getElementById('text-modal').style.display = 'flex';
+    }
+
+    function closeTextModal() {
+      document.getElementById('text-modal').style.display = 'none';
+    }
+
+    function saveTextItem() {
+      const text = document.getElementById('modal-input').value.trim();
+      if (text) {
+        const data = getDayData(todayKey);
+        data.texts.push({ text: text, completed: false });
+        updateDayData(todayKey, data);
+        renderDayContent(todayKey);
+      }
+      closeTextModal();
+    }
+
+    // 지난 기록 상세보기
+    function openDetailView(dateKey) {
+      const data = getDayData(dateKey);
+      const [y, m, d] = dateKey.split('-');
+      
+      document.getElementById('header-btn').innerText = `${parseInt(m)}月${parseInt(d)}日`;
+      document.getElementById('today-view').style.display = 'flex';
+      document.getElementById('previous-view').style.display = 'none';
+      renderDayContent(dateKey);
+    }
+
+    // 초기 실행
+    render();
+  </script>
+</body>
+</html>
