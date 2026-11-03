@@ -38,15 +38,17 @@
     }
 
     .app-container {
+      
       width: 100%;
       max-width: 400px;
-      height: auto; /* 모바일 주소창 높이 변화에 유연하게 대응 */
+      height: 100vh;
       max-height: 844px;
-      background-color: inherit;
+      background-color: inherit; /* body 배경색 따라감 */
       position: relative;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      transition: background-color 0.4s ease;
     }
 
     /* 상단 날짜 / 탭 토글 버튼 */
